@@ -1,0 +1,26 @@
+function DashboardCard({
+
+  title,
+
+  value
+
+}) {
+
+  return (
+
+    <div className="card">
+
+      <div className="card-body">
+
+        <h5>{title}</h5>
+
+        <h2>{value}</h2>
+
+      </div>
+
+    </div>
+
+  );
+}
+
+export default DashboardCard;
