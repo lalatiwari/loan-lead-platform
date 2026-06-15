@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const connectDB = require("./config/db");
 
@@ -13,16 +14,11 @@ app.use(cors());
 
 app.use(express.json());
 
-// 👇 Ye naya code add karo
-
-app.use(
- "/api/admin",
- require("./routes/adminRoutes")
-);
-
 app.use(
   "/uploads",
-  express.static("uploads")
+  express.static(
+    path.join(__dirname, "uploads")
+  )
 );
 
 app.use(
@@ -31,8 +27,8 @@ app.use(
 );
 
 app.use(
-"/api/admin",
-require("./routes/adminRoutes")
+  "/api/admin",
+  require("./routes/adminRoutes")
 );
 
 app.use(
@@ -44,8 +40,11 @@ app.get("/", (req, res) => {
   res.send("Loan Backend Running");
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT =
+process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server Running On ${PORT}`);
+  console.log(
+    `Server Running On ${PORT}`
+  );
 });

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 import Sidebar from "../components/Sidebar";
 import DashboardCard from "../components/DashboardCard";
 import ApplicationTable from "../components/ApplicationTable";
+import Papa from "papaparse";
+import StatusChart from "../components/StatusChart";
+
 
 import API from "../services/api";
 import { getToken } from "../utils/auth";
@@ -16,6 +20,13 @@ function Dashboard() {
   const [mobile, setMobile] = useState("");
 
   const [loanType, setLoanType] = useState("");
+  
+  const [loading, setLoading] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+const recordsPerPage = 10;
+
 
   useEffect(() => {
 
@@ -51,91 +62,118 @@ function Dashboard() {
 
   const fetchApplications = async () => {
 
-    try {
+  setLoading(true);
 
-      const response = await API.get(
+  try {
 
-        "/admin/applications",
+    const response = await API.get(
 
-        {
-          headers: {
-            Authorization: getToken()
-          }
+      "/admin/applications",
+
+      {
+        headers: {
+          Authorization: getToken()
         }
+      }
 
-      );
+    );
 
-      setApplications(
-        response.data.data
-      );
+    setApplications(
+      response.data.data
+    );
 
-    } catch (error) {
+  } catch (error) {
 
-      console.log(error);
+    console.log(error);
 
-    }
+    toast.error(
+      "Failed To Load Applications"
+    );
 
-  };
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
+
 
   const updateStatus = async (id, status) => {
 
-    try {
+  try {
 
-      await API.put(
+    await API.put(
 
-        `/admin/applications/${id}`,
+      `/admin/applications/${id}`,
 
-        {
-          status
-        },
+      {
+        status
+      },
 
-        {
-          headers: {
-            Authorization: getToken()
-          }
+      {
+        headers: {
+          Authorization: getToken()
         }
+      }
 
-      );
+    );
 
-      fetchApplications();
+    toast.success(
+      "Status Updated Successfully"
+    );
 
-      fetchStats();
+    fetchApplications();
 
-    } catch (error) {
+    fetchStats();
 
-      console.log(error);
+  } catch (error) {
 
-    }
+    console.log(error);
 
-  };
+    toast.error(
+      "Status Update Failed"
+    );
 
-  const searchApplication = async () => {
+  }
 
-    try {
+};
 
-      const response = await API.get(
+const searchApplication = async () => {
 
-        `/admin/search?mobile=${mobile}`,
+  try {
 
-        {
-          headers: {
-            Authorization: getToken()
-          }
+    const response = await API.get(
+
+      `/admin/search?mobile=${mobile}`,
+
+      {
+        headers: {
+          Authorization: getToken()
         }
+      }
 
-      );
+    );
 
-      setApplications(
-        response.data.data
-      );
+    setApplications(
+      response.data.data
+      
+    );
+    setCurrentPage(1);
 
-    } catch (error) {
+  } catch (error) {
 
-      console.log(error);
+    console.log(error);
 
-    }
+    toast.error(
+      "Search Failed"
+    );
 
-  };
+  }
+
+};
+
+
 
   const filterApplication = async () => {
 
@@ -157,15 +195,23 @@ function Dashboard() {
         response.data.data
       );
 
-    } catch (error) {
+      setCurrentPage(1);
 
-      console.log(error);
+    }catch (error) {
 
-    }
+  console.log(error);
+
+  toast.error(
+    "Filter Failed"
+  );
+
+}
 
   };
 
   const resetData = () => {
+
+    setCurrentPage(1);
 
     setMobile("");
 
@@ -175,6 +221,82 @@ function Dashboard() {
 
   };
 
+  const exportToCSV = () => {
+
+  const csvData = applications.map(
+    (item) => ({
+
+      Name: item.fullName,
+
+      Mobile: item.mobileNumber,
+
+      Email: item.email,
+
+      City: item.city,
+
+      LoanType: item.loanType,
+
+      LoanAmount: item.loanAmount,
+
+      Status: item.status,
+
+      CreatedAt: new Date(
+        item.createdAt
+      ).toLocaleString()
+
+    })
+  );
+
+  const csv =
+  Papa.unparse(csvData);
+
+  const blob =
+  new Blob(
+    [csv],
+    {
+      type: "text/csv"
+    }
+  );
+
+  const url =
+  window.URL.createObjectURL(blob);
+
+  const a =
+  document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+  "loan-applications.csv";
+
+  a.click();
+
+};
+
+
+
+const lastIndex =
+currentPage * recordsPerPage;
+
+const firstIndex =
+lastIndex - recordsPerPage;
+
+const currentApplications =
+applications.slice(
+  firstIndex,
+  lastIndex
+);
+
+const totalPages =
+Math.max(
+  1,
+  Math.ceil(
+    applications.length /
+    recordsPerPage
+  )
+);
+
+
   return (
 
     <div className="d-flex">
@@ -183,140 +305,252 @@ function Dashboard() {
 
       <div className="container-fluid p-4">
 
-        <h2>
+        <h2 className="mb-4">
           Dashboard
         </h2>
 
-        <div className="row mt-4">
+        {/* Stats Cards */}
 
-          <div className="col-md-3">
+        <div className="row">
+
+          <div className="col-md-3 mb-3">
 
             <DashboardCard
               title="Total"
-              value={stats.totalApplications}
+              value={stats.totalApplications || 0}
             />
 
           </div>
 
-          <div className="col-md-3">
+          <div className="col-md-3 mb-3">
 
             <DashboardCard
               title="Approved"
-              value={stats.approved}
+              value={stats.approved || 0}
             />
 
           </div>
 
-          <div className="col-md-3">
+          <div className="col-md-3 mb-3">
 
             <DashboardCard
               title="Rejected"
-              value={stats.rejected}
+              value={stats.rejected || 0}
             />
 
           </div>
 
-          <div className="col-md-3">
+          <div className="col-md-3 mb-3">
 
             <DashboardCard
               title="Pending"
-              value={stats.pending}
+              value={stats.pending || 0}
             />
 
           </div>
 
         </div>
 
-        <div className="row mt-5">
+<div className="card shadow-sm mt-4">
 
-          <div className="col-md-3">
+  <div className="card-body">
 
-            <input
-              type="text"
-              placeholder="Search Mobile"
-              className="form-control"
-              value={mobile}
-              onChange={(e) =>
-                setMobile(
-                  e.target.value
-                )
-              }
-            />
+    <h4 className="mb-3">
+      Loan Status Analytics
+    </h4>
 
-          </div>
+    <StatusChart
+      stats={stats}
+    />
 
-          <div className="col-md-2">
+  </div>
 
-            <button
-              className="btn btn-primary w-100"
-              onClick={searchApplication}
-            >
+</div>
 
-              Search
 
-            </button>
+        {/* Search & Filter */}
 
-          </div>
+        <div className="card shadow-sm mt-3">
 
-          <div className="col-md-3">
+          <div className="card-body">
 
-            <input
-              type="text"
-              placeholder="Loan Type"
-              className="form-control"
-              value={loanType}
-              onChange={(e) =>
-                setLoanType(
-                  e.target.value
-                )
-              }
-            />
+            <h5 className="mb-3">
+              Search & Filter
+            </h5>
 
-          </div>
+            <div className="row">
 
-          <div className="col-md-4">
+              <div className="col-md-4">
 
-            <button
-              className="btn btn-success me-2"
-              onClick={filterApplication}
-            >
+                <input
+                  type="text"
+                  placeholder="Search Mobile Number"
+                  className="form-control"
+                  value={mobile}
+                  onChange={(e) =>
+                    setMobile(
+                      e.target.value
+                    )
+                  }
+                />
 
-              Filter
+              </div>
 
-            </button>
+              <div className="col-md-2">
 
-            <button
-              className="btn btn-secondary"
-              onClick={resetData}
-            >
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={searchApplication}
+                >
+                  Search
+                </button>
 
-              Reset
+              </div>
 
-            </button>
+              <div className="col-md-4">
+
+                <input
+                  type="text"
+                  placeholder="Loan Type"
+                  className="form-control"
+                  value={loanType}
+                  onChange={(e) =>
+                    setLoanType(
+                      e.target.value
+                    )
+                  }
+                />
+
+              </div>
+
+              <div className="col-md-2">
+
+                <button
+                  className="btn btn-success me-2"
+                  onClick={filterApplication}
+                >
+                  Filter
+                </button>
+
+                <button
+                  className="btn btn-secondary"
+                  onClick={resetData}
+                >
+                  Reset
+                </button>
+
+              </div>
+
+            </div>
 
           </div>
 
         </div>
 
-        <div className="mt-5">
+        {/* Applications */}
 
-          <h4>
+        <div className="card shadow-sm mt-4">
 
-            Applications
+          <div className="card-body">
+<div className="d-flex justify-content-between align-items-center mb-3">
 
-          </h4>
+  <h4>
+    Applications ({applications.length})
+  </h4>
 
-          <ApplicationTable
+  <button
+    className="btn btn-success"
+    onClick={exportToCSV}
+  >
+    Export CSV
+  </button>
 
-            applications={
-              applications
-            }
+</div>
 
-            onStatusUpdate={
-              updateStatus
-            }
+{
+  loading ? (
 
-          />
+    <div className="text-center py-5">
+
+      <div
+        className="spinner-border text-primary"
+        role="status"
+      >
+      </div>
+
+      <p className="mt-3">
+        Loading Applications...
+      </p>
+
+    </div>
+
+  ) : (
+
+   <ApplicationTable
+
+  applications={
+    currentApplications
+  }
+
+  onStatusUpdate={
+    updateStatus
+  }
+
+/>
+
+  )
+}
+
+<div className="d-flex justify-content-center mt-4">
+
+  <button
+
+    className="btn btn-outline-primary me-2"
+
+    disabled={currentPage === 1}
+
+    onClick={() =>
+      setCurrentPage(
+        currentPage - 1
+      )
+    }
+
+  >
+
+    Previous
+
+  </button>
+
+  <span className="align-self-center">
+
+    Page {currentPage} of {totalPages}
+
+  </span>
+
+  <button
+
+    className="btn btn-outline-primary ms-2"
+
+    disabled={
+      currentPage === totalPages
+    }
+
+    onClick={() =>
+      setCurrentPage(
+        currentPage + 1
+      )
+    }
+
+  >
+
+    Next
+
+  </button>
+
+</div>
+
+
+          </div>
 
         </div>
 
