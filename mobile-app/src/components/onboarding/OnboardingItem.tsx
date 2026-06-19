@@ -3,15 +3,21 @@ import {
   View,
   Text,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 
 import { Colors } from "../../theme/colors";
 
+const { width } =
+Dimensions.get("window");
+
 export default function OnboardingItem({
   item,
 }: any) {
+
   return (
     <View style={styles.container}>
+
       <View style={styles.iconContainer}>
         <Text style={styles.icon}>
           💰
@@ -25,13 +31,15 @@ export default function OnboardingItem({
       <Text style={styles.description}>
         {item.description}
       </Text>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
-    width: 390,
+    width: width,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -66,4 +74,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
   },
+
 });

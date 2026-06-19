@@ -12,6 +12,10 @@ import {
   Dimensions,
 } from "react-native";
 
+import {
+  useNavigation,
+} from "@react-navigation/native";
+
 import { Colors } from "../../theme/colors";
 
 import { onboardingData }
@@ -25,26 +29,36 @@ Dimensions.get("window");
 
 export default function OnboardingScreen() {
 
+  const navigation: any =
+  useNavigation();
+
   const flatListRef =
-  useRef<any>(null);
+  useRef<FlatList>(null);
 
   const [currentIndex,
     setCurrentIndex] =
     useState(0);
 
-  const nextSlide = () => {
+ const nextSlide = () => {
 
-    if (
-      currentIndex <
-      onboardingData.length - 1
-    ) {
+  const nextIndex =
+  currentIndex + 1;
 
-      flatListRef.current.scrollToIndex({
-        index: currentIndex + 1,
-      });
+  if (
+    nextIndex <
+    onboardingData.length
+  ) {
 
-    }
-  };
+    flatListRef.current?.scrollToOffset({
+      offset: nextIndex * width,
+      animated: true,
+    });
+
+    setCurrentIndex(nextIndex);
+
+  }
+
+};
 
   return (
 
@@ -64,15 +78,24 @@ export default function OnboardingScreen() {
             item={item}
           />
         )}
+        getItemLayout={(
+          data,
+          index
+        ) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
         onMomentumScrollEnd={(e) => {
 
           const index =
-            Math.round(
-              e.nativeEvent.contentOffset.x /
-              width
-            );
+          Math.round(
+            e.nativeEvent.contentOffset.x /
+            width
+          );
 
           setCurrentIndex(index);
+
         }}
       />
 
@@ -94,6 +117,7 @@ export default function OnboardingScreen() {
                   styles.activeDot,
                 ]}
               />
+
             )
           )}
 
@@ -104,6 +128,11 @@ export default function OnboardingScreen() {
 
           <TouchableOpacity
             style={styles.button}
+            onPress={() =>
+              navigation.replace(
+                "Login"
+              )
+            }
           >
 
             <Text
@@ -134,6 +163,7 @@ export default function OnboardingScreen() {
       </View>
 
     </View>
+
   );
 }
 
@@ -147,7 +177,9 @@ StyleSheet.create({
   },
 
   footer: {
-    paddingBottom: 50,
+    position: "absolute",
+    bottom: 50,
+    width: "100%",
     alignItems: "center",
   },
 
@@ -165,17 +197,23 @@ StyleSheet.create({
   },
 
   activeDot: {
+    width: 25,
     backgroundColor:
       Colors.accent,
-    width: 25,
   },
 
   button: {
     backgroundColor:
       Colors.accent,
+
     paddingHorizontal: 35,
     paddingVertical: 14,
+
     borderRadius: 12,
+
+    minWidth: 140,
+
+    alignItems: "center",
   },
 
   buttonText: {
@@ -183,4 +221,5 @@ StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
+
 });
