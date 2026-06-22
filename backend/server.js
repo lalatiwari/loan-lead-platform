@@ -32,6 +32,15 @@ app.use(
 );
 
 app.use(
+  "/api/customer",
+  require(
+    "./routes/customerAuthRoutes"
+  )
+);
+
+
+
+app.use(
   "/api/loan",
   require("./routes/loanRoutes")
 );
