@@ -9,6 +9,9 @@ import HomeScreen from "../screens/home/HomeScreen";
 import OtpScreen
 from "../screens/auth/OtpScreen";
 
+import LoanApplicationScreen
+from "../screens/loan/LoanApplicationScreen";
+
 
 
 const Stack =
@@ -41,6 +44,11 @@ export default function AppNavigator() {
           name="Home"
           component={HomeScreen}
         />
+
+        <Stack.Screen
+  name="LoanApplication"
+  component={LoanApplicationScreen}
+/>
 
 <Stack.Screen
   name="Otp"

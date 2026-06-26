@@ -1,34 +1,30 @@
 import React from "react";
 import {
-  View,
+  ScrollView,
   Text,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  View,
 } from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
 
 import { Colors } from "../../theme/colors";
 
+import WelcomeCard from "./WelcomeCard";
+import LoanCategoryCard from "./LoanCategoryCard";
+import QuickActionCard from "./QuickActionCard";
+
 export default function HomeScreen() {
+
+  const navigation: any = useNavigation();
+
   return (
     <ScrollView style={styles.container}>
-
       <Text style={styles.welcome}>
         Welcome Shubham 👋
       </Text>
 
-      <View style={styles.banner}>
-
-        <Text style={styles.bannerTitle}>
-          Get Instant Loan Approval
-        </Text>
-
-        <Text style={styles.bannerText}>
-          Apply securely with document
-          verification and quick approval.
-        </Text>
-
-      </View>
+      <WelcomeCard />
 
       <Text style={styles.sectionTitle}>
         Loan Categories
@@ -36,66 +32,62 @@ export default function HomeScreen() {
 
       <View style={styles.grid}>
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardIcon}>💳</Text>
-          <Text style={styles.cardText}>
-            Personal Loan
-          </Text>
-        </TouchableOpacity>
+  <LoanCategoryCard
+    title="Personal Loan"
+    onPress={() =>
+      navigation.navigate("LoanApplication", {
+        loanType: "Personal Loan",
+      })
+    }
+  />
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardIcon}>🏠</Text>
-          <Text style={styles.cardText}>
-            Home Loan
-          </Text>
-        </TouchableOpacity>
+  <LoanCategoryCard
+    title="Home Loan"
+    onPress={() =>
+      navigation.navigate("LoanApplication", {
+        loanType: "Home Loan",
+      })
+    }
+  />
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardIcon}>🚗</Text>
-          <Text style={styles.cardText}>
-            Car Loan
-          </Text>
-        </TouchableOpacity>
+  <LoanCategoryCard
+    title="Car Loan"
+    onPress={() =>
+      navigation.navigate("LoanApplication", {
+        loanType: "Car Loan",
+      })
+    }
+  />
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.cardIcon}>🏢</Text>
-          <Text style={styles.cardText}>
-            Business Loan
-          </Text>
-        </TouchableOpacity>
+  <LoanCategoryCard
+    title="Business Loan"
+    onPress={() =>
+      navigation.navigate("LoanApplication", {
+        loanType: "Business Loan",
+      })
+    }
+  />
 
-      </View>
+</View>
 
       <Text style={styles.sectionTitle}>
         Quick Services
       </Text>
 
-      <TouchableOpacity style={styles.serviceCard}>
-        <Text style={styles.serviceTitle}>
-          EMI Calculator
-        </Text>
+      <QuickActionCard
+        title="EMI Calculator"
+        subtitle="Calculate your monthly EMI instantly."
+      />
 
-        <Text style={styles.serviceText}>
-          Calculate your monthly EMI instantly.
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.serviceCard}>
-        <Text style={styles.serviceTitle}>
-          Application Tracker
-        </Text>
-
-        <Text style={styles.serviceText}>
-          Track your loan application status.
-        </Text>
-      </TouchableOpacity>
-
+      <QuickActionCard
+        title="Application Tracker"
+        subtitle="Track your loan application status."
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: "#F4F6F8",
@@ -107,25 +99,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: Colors.textPrimary,
     marginBottom: 20,
-  },
-
-  banner: {
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-    padding: 25,
-    marginBottom: 25,
-  },
-
-  bannerTitle: {
-    color: Colors.secondary,
-    fontSize: 22,
-    fontWeight: "700",
-  },
-
-  bannerText: {
-    color: Colors.accent,
-    marginTop: 10,
-    lineHeight: 22,
   },
 
   sectionTitle: {
@@ -141,51 +114,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 25,
   },
-
-  card: {
-    width: "48%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    padding: 20,
-    alignItems: "center",
-    marginBottom: 15,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-
-  cardIcon: {
-    fontSize: 34,
-  },
-
-  cardText: {
-    marginTop: 10,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-
-  serviceCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 15,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-
-  serviceTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 5,
-  },
-
-  serviceText: {
-    color: Colors.textSecondary,
-  },
-
 });
